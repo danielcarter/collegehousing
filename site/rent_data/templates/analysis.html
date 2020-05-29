@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+{% block content %}
+
+
+
+    <div class="columns">
+
+      <div class="column is-two-thirds content">
+
+        <div class="content is-large">
+          <p class="intro_graf">
+          The College Housing Project collects public data from the Hays County Appraisal District, the San Marcos Police Department, and other sources. This page provides links to the original data files used in the project, as well as an explanation of the processing involved.
+          </p>
+        </div>
+
+        <h2 id="process-data-files">Data Files</h2>
+
+        <p>Included below are original data files obtained from public agencies and processed for this project. Currently, property records are formatted as delimited text files, and police, fire and EMS records are formatted as .xslx and .csv files. All of these files can be opened in Excel or similar spreadsheet software.</p>
+
+        <div class="box">
+          <h3 id="process-property-records">Property Records</h3>
+          <hr />
+          <p><strong>2018</strong></p>
+          <ul>
+            <li><a href="{% static "rent_data/data/2018/2018_PropertyDataExport664642.txt" %}">Land Data</a></li>
+            <li><a href="{% static "rent_data/data/2018/2018_PropertyDataExport664640.txt" %}">Property Data</a></li>
+            <li><a href="{% static "rent_data/data/2018/2018_PropertyDataExport664641.txt" %}">Ownership Data</a></li>
+          </ul>
+        </div>
+
+        <div class="box">
+          <h3 id="process-police-records">Police, Fire and EMS Records</h3>
+          <hr />
+          <p><strong>2018</strong></p>
+          <ul>
+            <li><a href="{% static "rent_data/data/2018/2018_SMPD_Incident_Blotter.xlsx" %}">Police Incident Blotter</a></li>
+            <li><a href="{% static "rent_data/data/2018/2018_SM_Fire_EMS_Blotter.csv" %}">Fire and EMS Blotter</a></li>
+          </ul>
+        </div>
+
+        <div class="box">
+          <h3 id="process-data-notes">Notes</h3>
+          <hr />
+
+          <p><strong>Police Records</strong></p>
+          <p>The incident blotters included here contain all police calls, regardless of whether they resulted in a police report or police action.</p>
+
+          <p><strong>Fire and EMS Records</strong></p>
+          <p>Fire and EMS records are collected together from the San Marcos Fire Department. We consider a record to be an EMS call if the description begins with "EMS."</p>
+
+        </div>
+
+        <h2 id="process-data-processing">Data Processing</h2>
+        <div class="box">
+          <p><strong>Inclusion of Properties</strong></p>
+          <p>Properties are included in the database based on records from the Hays County Appraisal District. Only properties in the 78666 area code and designated using the B1 land type code (residential: multi-family) are included.</p>
+
+          <p><strong>Locations and Distances</strong></p>
+          <p>Information related to distances is calculated using coordinates obtained using Google's Geocoding API. Because data such as police reports are entered manually, some addresses cannot be converted to coordinates and thus are not included. Because some addresses are reported as highways exits or consist only of street names, the locations and distances reported should be considered approximate.</p>
+
+
+        </div>
+
+
+
+      </div><!-- .column -->
+
+      <div class="column is-one-third">
+
+        <article class="message is-primary">
+          <div class="message-header">
+            <p>Contents</p>
+          </div>
+          <div class="message-body">
+            <ol>
+              <li>
+                <a href="#process-data-files">Data Files</a>
+                <ul>
+                  <li><a href="#process-property-records">Property Records</a></li>
+                  <li><a href="#process-police-records">Police Records</a></li>
+                  <li><a href="#process-data-notes">Notes</a></li>
+                </ul>
+              </li>
+              <li><a href="#process-data-processing">Data Processing</a></li>
+            </ol>
+          </div>
+        </article>
+
+      </div><!-- .column -->
+
+    </div><!-- .columns -->
+
+
+
+
+{% endblock %}

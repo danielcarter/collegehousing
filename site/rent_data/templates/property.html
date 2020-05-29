@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block content %}
+
+      <nav class="breadcrumb" aria-label="breadcrumbs">
+        <ul>
+          <li><a href="{% url 'index' %}">College Housing Project</a></li>
+          <li><a href="{% url 'properties' 'name' %}">Properties</a></li>
+          <li class="is-active"><a href="#" aria-current="page">{{ property.name|title }}</a></li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+
+    <div class="columns columns-secondary">
+      <div class="column is-two-thirds content">
+        <div id='map'></div>
+      </div><!-- .column -->
+
+      <div class="column is-one-third content">
+
+            <div class="card has-margin-bottom">
+              <header class="card-header has-background-primary">
+                <p class="card-header-title has-text-white">
+                  {{ property.name|title }}<br />
+                  {{ property.address|title }}
+                </p>
+              </header>
+              <div class="card-content">
+                <div class="content">
+                  <ul>
+                    <li>
+                      {{ current_owners|safe }}
+                    </li>
+                    <li>Appraised value: ${{ property_value|intcomma }}</li>
+                    <li>2019 police calls: {{ property.police_reports.all.count }}</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!--
+            <div class="card">
+              <header class="card-header has-background-grey-lighter">
+                <p class="card-header-title">
+                  Police Reports
+                </p>
+              </header>
+              <div class="card-content">
+                <div class="content">
+                  <table class="table">
+
+                    <thead>
+                      <tr>
+                        <th>Proximity</th>
+                        <th>Last year</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Exact address</td>
+                        <td>{{ police_reports_exact }}</td>
+                      </tr>
+                      <tr>
+                        <td>Half-mile</td>
+                        <td>{{ police_reports_half_mile }}</td>
+                      </tr>
+                      <tr>
+                        <td>One mile</td>
+                        <td>{{ police_reports_one_mile }}</td>
+                      </tr>
+                    </tbody>
+
+                  </table>
+
+                </div>
+              </div>
+              <footer>
+
+              </footer>
+            </div>
+            -->
+
+      </div><!-- .column -->
+
+    </div><!-- .columns -->
+
+
+    <script>
+    mapboxgl.accessToken = 'pk.eyJ1IjoiZGNhcnRlciIsImEiOiJjamZiZXczdnozNXc2MnFwNDNvazdic3d5In0._SFNB_RTylq_bYxJbqVdiQ';
+    var map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/mapbox/streets-v11',
+      center: [{{property.longitude}}, {{ property.latitude }}],
+      zoom: 14
+    });
+
+    var properties_geojson = {
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: {
+              lon: {{ property.longitude }},
+              lat: {{ property.latitude }}
+            }
+          },
+          popup: new mapboxgl.Popup({ offset: 25 }).setHTML('<strong>{{ property.name }}</strong><br />{{ property.address }}'),
+          properties: {
+            title: '{{ property.name }}',
+            description: '{{ property.address }}'
+          }
+        },
+      ]
+    };
+
+    // add markers to map
+    properties_geojson.features.forEach(function(marker) {
+
+      // create a HTML element for each feature
+      var el = document.createElement('div');
+      el.className = 'marker large has-background-primary';
+
+      // make a marker for each feature and add to the map
+      new mapboxgl.Marker(el)
+        .setLngLat(marker.geometry.coordinates)
+        .setPopup(marker.popup)
+        .addTo(map);
+    });
+
+    </script>
+
+
+
+
+
+
+{% endblock %}

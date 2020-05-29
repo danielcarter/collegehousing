@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block content %}
+
+    <nav class="breadcrumb" aria-label="breadcrumbs">
+      <ul>
+        <li><a href="{% url 'index' %}">College Housing Project</a></li>
+        <li><a href="{% url 'owners' %}">Owners</a></li>
+        <li class="is-active"><a href="#" aria-current="page">{{ owner.name }}</a></li>
+      </ul>
+    </nav>
+
+  </div>
+</div>
+
+  <div class="columns columns-secondary">
+    <div class="column is-full content">
+
+        <h3>Properties</h3>
+        <table class="table">
+
+          <thead>
+            <tr>
+              <th>Year</th>
+              <th>property.address</th>
+              <th>Total Value</th>
+              <th>Ownership Percent</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            {% for ownership in ownership_observations.all %}
+
+              <tr>
+                <td>{{ ownership.year }}</td>
+                <td><a href="{% url 'property' ownership.property.id %}" title="Information about {{ownership.property.name}}">{{ ownership.property.address }}</td>
+                <td>${{ ownership.value|intcomma }}</td>
+                <td>{{ ownership.ownership_percent }}%</td>
+              </tr>
+
+            {% endfor %}
+          </tbody>
+        </table>
+
+      </div><!-- .column -->
+
+    </div><!-- .columns -->
+
+
+
+
+{% endblock %}
