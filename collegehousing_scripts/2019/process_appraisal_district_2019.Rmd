@@ -1,0 +1,350 @@
+---
+title: "Process Appraisal District - 2019"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+These lines specify whether or not we want to cache the results. Ideally, we don't want to run everything over and over again, so once we have the code running like we want, we can set cache to TRUE here.
+
+```{r setup}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+## General notes on this script
+
+This script reformats files obtained from the Hays County Appraisal District to the common format used for import into the web database. The PDF created by this file should be saved as a record of the process used to create the database.
+
+This script might need to be modified each year in order to accomodate changes to the files obtained from the appraisal district.
+
+## File output
+
+### Properties - [year]_properties_export_[date].csv
+
+This is our main file for importing properties into the database. 
+
+When we check to see if a property already exists in the database, we'll convert this string to lowercase and remove all punctuation.
+
+The desired format for this file is:
+
+address
+ref_id
+property_name
+longitude
+latitude
+value
+owner_name
+owner_address
+owner_address_2
+owner_address_3
+owner_city
+owner_state
+owner_zip
+ownership_percent
+year
+
+The address_canonical field should be composed as follows:
+
+address_street, address_city, address_state address_zip fields
+
+## Notes for 2019
+
+This script was prepared by Daniel Carter using the 2019 Certified Property Data Export Files available from https://www.hayscad.com/data-downloads/. These files are archived on the web server at rent_data/static/rent_data/data/2019.
+
+## Settings
+
+This section sets up needed variables such as references to the file for import. Because we are using R Notebooks to process data, all files live in the working directory for this project. (Currently this directory lives on Daniel's laptop.)
+
+Load the tidyverse library and set a variable with the name of the files to import. Those file should be stored in the same directory as this script. These
+
+```{r}
+library("tidyverse")
+library("readxl")
+import_file_land = "2019_PropertyDataExport735288.txt"
+import_file_properties = "2019_PropertyDataExport735286.txt"
+import_file_owners = "2019_PropertyDataExport735287.txt"
+```
+
+Set the year, which is used to name output files.
+
+```{r}
+year = "2019"
+```
+
+## Process Properties
+
+Read in the import file:
+
+```{r}
+original_land = read_csv(import_file_land)
+original_properties = read_csv(import_file_properties)
+```
+
+Reduce land to B1 designation. We're merging everything that has B1 for either StateCode or LandType, because this catches mixed use complexes and some other oddities. 
+```{r}
+original_state_b1 = original_land[original_land$StateCode == "B1",]
+original_land_b1 = original_land[original_land$LandType == "B1",]
+original_land_b1 = unique(rbind(original_state_b1, original_land_b1))
+```
+
+Merge B1 land with property information:
+```{r}
+properties = merge(original_land_b1, original_properties, by.x = "PropertyID", by.y = "PropertyID")
+```
+
+At this point we have to make some corrections to the CAD data. There are 29 properties at 705 W River Rd., but only 20 match land records, meaning that when we reduce our properties to B1 land designation, we lose nine properties. The following step goes ahead and merges all the properties at that location.
+
+### Unique case: 705 W River Rd.
+
+One issue here is that we have to assume that the ownership is the same for all the properties at this address, which it currently is. This is something we will need to check and verify each year. 
+
+First we make a table with just the properties we want to merge. We reduce that table to the first row and update the current market value.
+```{r}
+tmp_705_w_river_rd = properties[grepl('705 w river rd', properties$Situs, ignore.case = TRUE),]
+merged_705_w_river_rd = tmp_705_w_river_rd[1,]
+merged_705_w_river_rd$CurrMarketValue = sum(tmp_705_w_river_rd$CurrMarketValue)
+```
+
+Now we remove all the properties at that address and add in our new merged row.
+```{r}
+properties = properties[!grepl('705 w river rd', properties$Situs, ignore.case = TRUE),]
+properties = rbind(properties, merged_705_w_river_rd)
+```
+
+
+### Unique case: Stone Brook and La Vista
+These are retirement homes, so we're getting rid of them
+```{r}
+properties = properties[!grepl('R93286', properties$QuickRefID.y, ignore.case = TRUE),]
+properties = properties[!grepl('R93223', properties$QuickRefID.y, ignore.case = TRUE),]
+```
+
+### Unique case: 600 comanche
+This is property owned by the university -- no complex.
+```{r}
+properties = properties[!grepl('R21257', properties$QuickRefID.y, ignore.case = TRUE),]
+```
+
+
+### Unique case: 800 N LBJ
+
+We also need to merge 800 N LBJ and 800 N LBJ & Forest Dr -- same as above, except we need to match on the name instead of the address, so if Treehouse Apartments ever opens a new location, we'll need to update this.
+
+```{r}
+tmp_800_n_lbj = properties[grepl('treehouse apts', properties$SitusLocation, ignore.case = TRUE),]
+merged_800_n_lbj = tmp_800_n_lbj[1,]
+merged_800_n_lbj$CurrMarketValue = sum(tmp_800_n_lbj$CurrMarketValue)
+merged_800_n_lbj$Situs = "800 N LBJ DR, SAN MARCOS, TX 78666"
+
+properties = properties[!grepl('treehouse apts', properties$SitusLocation, ignore.case = TRUE),]
+properties = rbind(properties, merged_800_n_lbj)
+```
+
+### Unique case: W Hutchinson
+
+This is part of Sanctuary Lofts, 350 North Street. We're doing this a little differently, because matching on W Hutchinson seems like a bad idea. So, we're using the property ID, which we assume doesn't change, bu we'll need to keep an eye on this. 
+
+```{r}
+properties[grepl('treehouse apts', properties$SitusLocation, ignore.case = TRUE),]$CurrMarketValue = properties[grepl('treehouse apts', properties$SitusLocation, ignore.case = TRUE),]$CurrMarketValue + properties[properties$PropertyID == 84811,]$CurrMarketValue
+
+properties = properties[properties$PropertyID != 84811,]
+```
+
+### Unique case: VILLAS AT WILLOW SPRINGS
+
+Need to combine this with its parking lot, which just has the address S IH 35.
+
+```{r}
+properties[grepl('1506 S IH 35', properties$Situs, ignore.case = TRUE),]$CurrMarketValue = properties[grepl('1506 S IH 35', properties$Situs, ignore.case = TRUE),]$CurrMarketValue + properties[properties$PropertyID == 118256,]$CurrMarketValue
+
+properties = properties[properties$PropertyID != 118256,]
+```
+
+
+### Unique cases -- not apartments
+
+Removing these based on manual inspection:
+
+```{r}
+### Zeta Tau Alpha sorority
+properties = properties[!grepl('102 MOSSCLIFF CIR', properties$Situs, ignore.case = TRUE),]
+
+### No improvements on land
+properties = properties[!grepl('1408 MARLETON ST', properties$Situs, ignore.case = TRUE),]
+
+### Alpha Zeta sorority?
+properties = properties[!grepl('428 W HUTCHISON ST', properties$Situs, ignore.case = TRUE),]
+
+### Vacant lot?
+properties = properties[!grepl('745 RIVER RD', properties$Situs, ignore.case = TRUE),]
+
+
+```
+
+### 1271 Sadler
+```{r}
+properties[grepl('1271 SADLER', properties$Situs, ignore.case = TRUE),]$SitusLocation = "SADLER HOUSE APARTMENTS"
+properties[grepl('1271 SADLER', properties$Situs, ignore.case = TRUE),]$Situs = "1271 SADLER DR, SAN MARCOS, TX 78666"
+```
+
+
+
+### Rename complexes without names
+
+```{r}
+properties[grepl('417 N COMANCHE ST', properties$Situs, ignore.case = TRUE),]$SitusLocation = "POINTE SAN MARCOS"
+
+properties[grepl('755 RIVER RD', properties$Situs, ignore.case = TRUE),]$SitusLocation = "RIVER ROAD APARTMENTS"
+```
+
+### End unique cases
+
+Reduce to columns 
+```{r}
+properties = properties[,c("QuickRefID.x","Situs","SitusLocation","PropertyID","PropertyNumber.x","Description","StateCode","CurrMarketValue")]
+```
+
+Remove properties not in 78666:
+```{r}
+properties = properties[grepl("^.* 78666", properties$Situs),]
+```
+
+Some properties might not have an address -- kick those out to a separate table to examine later:
+```{r}
+properties_no_address = properties[is.na(properties$Situs),]
+properties = properties[!is.na(properties$Situs),]
+```
+
+
+### Geocoding
+
+```{r, include=FALSE}
+library("ggmap")
+register_google("AIzaSyB0TJpE_2VnVyteAo8NC1MjZT9g-1jdPFI ")
+
+unique_addresses = unique(properties$Situs)
+
+unique_lat_lon = geocode(unique_addresses)
+```
+
+Merge coordinates with properties table:
+```{r}
+addresses_lon_lat = as.data.frame(cbind(unique_addresses, unique_lat_lon$lon, unique_lat_lon$lat))
+colnames(addresses_lon_lat) = c("address","lon","lat")
+
+addresses_lon_lat$address = as.character(addresses_lon_lat$address)
+addresses_lon_lat$lon = as.numeric(as.character(addresses_lon_lat$lon))
+addresses_lon_lat$lat = as.numeric(as.character(addresses_lon_lat$lat))
+
+properties = merge(properties, addresses_lon_lat, by.y ="address", by.x ="Situs" )
+
+```
+
+
+## Merge in Owners
+
+Read in the owners and merge with the properties. 
+
+```{r}
+original_owners = read_csv(import_file_owners)
+owners_properties = merge(properties, original_owners, by.x = "PropertyNumber.x", by.y = "PropertyNumber", all.x = TRUE, no.dups = FALSE )
+```
+
+At this point, there might be rows that are exact duplicates. We assume there are errors in the data, so we just delete the duplicate rows.
+
+```{r}
+owners_properties = unique(owners_properties)
+```
+
+### Special Case: Copper Beech
+
+Copper Beech has two owners listed, but we're pretty sure they're the same, so we're just going to set the owner to COPPER BEECH TOWNHOME COMMUNITIES. The next step will merge these and take the first owner address.
+
+```{r}
+owners_properties[grepl("1701 MILL ST",owners_properties$Situs, ignore.case = TRUE),]$OwnerName = "COPPER BEECH TOWNHOME COMMUNITIES"
+owners_properties[grepl("1701 MILL ST",owners_properties$Situs, ignore.case = TRUE),]$SitusLocation = "COPPER BEECH"
+```
+
+### End Special Case: Copper Beech
+
+At this stage, we'll also go ahead and reduce the columns to just what we need. Note that we assume here that all of the multiple properties to be merged have a single owner. In the report section, there's a flag for whether or not any properties seem to violate this.
+
+```{r}
+library(dplyr)
+
+multiple_owners_multiple_properties = owners_properties %>% group_by(Situs) %>% filter (n() > 1)
+multiple_owners_flag = FALSE
+if ( length(unique(multiple_owners_multiple_properties$OwnerName)) != length(unique(multiple_owners_multiple_properties$Situs)) ) { 
+  multiple_owners_flag = TRUE
+  }
+
+owners_properties = owners_properties %>% group_by(Situs) %>% summarise(
+  ref_id = first(QuickRefID.x),
+  SitusLocation = first(SitusLocation),
+  CurrMarketValue = sum(CurrMarketValue),
+  lon = first(lon),
+  lat = first(lat),
+  OwnerName = first(OwnerName),
+  Address1 = first(Address1),
+  Address2 = first(Address2),
+  Address3 = first(Address3),
+  City = first(City),
+  State = first(State),
+  Zip = first(Zip),
+  OwnershipPercent = first(OwnershipPercent)
+  )
+```
+
+
+### Export Files
+
+Export a csv of properties to upload into the web system. 
+
+```{r}
+properties_export = owners_properties[,c("Situs","SitusLocation","lon","lat","CurrMarketValue", "OwnerName", "Address1","Address2","Address3","City","State","Zip","OwnershipPercent")]
+properties_export$year = year
+colnames(properties_export) = c("address_canonical","property_name","longitude","latitude","value","owner_name","owner_address_1","owner_address_2","owner_address_3","owner_city","owner_state","owner_zip","ownership_percent","year")
+properties_export = properties_export[!is.na(properties_export$latitude),]
+properties_filename = paste(year,"_properties_export_",as.Date(Sys.Date()),".csv",collapse="", sep="")
+write.csv(properties_export, properties_filename, row.names = FALSE)
+
+```
+
+Also export a csv of unique addresses to use in filtering.
+
+```{r}
+unique_addresses = unique(unique_addresses)
+unique_addresses_simple = unlist(lapply(unique_addresses, function(x) { unlist(strsplit(x, ",", fixed=TRUE))[1] }))
+
+unique_address_filename = paste(year,"_unique_property_addresses",as.Date(Sys.Date()),".csv",collapse="", sep="")
+unique_addresses = cbind(unique_addresses, unique_addresses_simple)
+colnames(unique_addresses) = c("address_full","address_simple")
+write.csv(unique_addresses, unique_address_filename, row.names = FALSE)
+```
+
+# Sample 50
+```{r}
+sample_filename = paste(year,"_sample_50_",as.Date(Sys.Date()),".csv",collapse="", sep="")
+for_sample = owners_properties[owners_properties$CurrMarketValue >= 1000000,]
+write.csv( for_sample[sample(nrow(for_sample), 50),], sample_filename, row.names = FALSE)
+```
+
+
+for_sample = owners_properties[owners_properties$CurrMarketValue >= 1000000,]
+
+
+## Report
+
+Property records imported: `r nrow(properties_export)`
+
+Unique properties: `r length(unique(properties_export$property_name))`
+
+Final reduced properties: `r nrow(properties)`
+
+Properties without addresses: `r nrow(properties_no_address)`
+
+Properties without coordinates: `r nrow(owners_properties[is.na(owners_properties$lon),])`
+
+Check on combined properties that might have multiple owners? `r multiple_owners_flag`
+
+
