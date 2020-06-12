@@ -195,7 +195,8 @@ properties = properties[!is.na(properties$Situs),]
 
 ```{r, include=FALSE}
 library("ggmap")
-register_google("AIzaSyB0TJpE_2VnVyteAo8NC1MjZT9g-1jdPFI ")
+source("../tokens.r")
+register_google(google_maps)
 
 unique_addresses = unique(properties$Situs)
 
