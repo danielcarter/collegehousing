@@ -15,25 +15,10 @@ import math
 import re
 import chardet
 from decimal import Decimal
-from import_export import resources
-from import_export.admin import ImportExportActionModelAdmin
 
 # Register models.
 from rent_data.models import Property, PoliceReport, Owner, PropertyOwner, FireReport, Stat, RentObservation, Value, ManagementObservation
 
-
-# Exports
-class PropertyResource(resources.ModelResource):
-    class Meta:
-        model = Property
-
-class OwnerResource(resources.ModelResource):
-    class Meta:
-        model = Owner
-
-class PropertyOwnerResource(resources.ModelResource):
-    class Meta:
-        model = PropertyOwner
 
 # Overwrite admin site so it can be extended.
 class MyAdminSite(AdminSite):
@@ -814,7 +799,7 @@ admin_site = MyAdminSite()
 
 
 @admin.register(Property, site=admin_site)
-class PropertyAdmin(ImportExportActionModelAdmin):
+class PropertyAdmin(admin.ModelAdmin):
     fields = ('address','name', 'year_built', 'section_8', 'management_companies', 'notes','rents')
     search_fields = ['address','name']
     pass
@@ -832,11 +817,11 @@ class FireReportAdmin(admin.ModelAdmin):
     pass
 
 @admin.register(Owner, site=admin_site)
-class OwnerAdmin(ImportExportActionModelAdmin):
+class OwnerAdmin(admin.ModelAdmin):
     pass
 
 @admin.register(PropertyOwner, site=admin_site)
-class PropertyOwnerAdmin(ImportExportActionModelAdmin):
+class PropertyOwnerAdmin(admin.ModelAdmin):
     list_filter = ('year','owner')
     pass
 
