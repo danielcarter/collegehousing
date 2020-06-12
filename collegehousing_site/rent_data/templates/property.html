@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block content %}
+
+
+
+
+
+    <div class="columns columns-secondary">
+
+      <div class="column is-two-thirds content">
+        <div id='map' class="chart"></div>
+
+        <!-- POLICE GRAPH -->
+        <div class="chart">
+          <h4>Police Reports to {{ property.address }}</h4>
+          <canvas id="police_report_chart"></canvas>
+          <script type="text/javascript">
+            var defaultChartOptions = {
+              aspectRatio: 3,
+              legend: {
+                display: false
+              },
+              scales: {
+                  yAxes: [{
+                      ticks: {
+                          suggestedMin: 0,
+                      }
+                  }]
+              }
+            }
+            var policeChartOptions = {
+              aspectRatio: 2,
+              legend: {
+                display: true,
+                position: 'bottom'
+              },
+              scales: {
+                  yAxes: [{
+                      stacked: true,
+                      ticks: {
+                          suggestedMin: 0,
+                      }
+                  }]
+              }
+            }
+            var ctx = document.getElementById('police_report_chart').getContext('2d');
+            var chart = new Chart(ctx, {
+                type: 'line',
+
+                data: {
+                    labels: [{{ police_report_years|join:","}}],
+                    datasets: [
+                    {% for activity, values in police_reports_data.items %}
+                      {
+                        label: '{{activity}}',
+                        borderColor: default_colors[{{forloop.counter0}}],
+                        backgroundColor: default_colors[{{forloop.counter0}}],
+                        data: [{% for year, count in values.items %} {{count}}, {% endfor %}]
+                      },
+                    {% endfor %}
+                    ]
+                },
+
+                // Configuration options go here
+                options: policeChartOptions
+            });
+          </script>
+          <p><a href="{% url 'export_police_reports_specific' property.id %}"><span>Download all police data for this address.</span></a></p>
+        </div>
+
+
+        <div class="columns">
+          <!-- FIRE GRAPH -->
+          <div class="column chart is-half">
+            <h4>Fire Reports</h4>
+            <canvas id="fire_report_chart"></canvas>
+            <script type="text/javascript">
+              var ctx = document.getElementById('fire_report_chart').getContext('2d');
+              var chart = new Chart(ctx, {
+                  type: 'line',
+
+                  data: {
+                      labels: [ {{ fire_reports_data|join:" , "}} ],
+                      datasets: [{
+                          label: 'Fire Reports',
+                          borderColor: 'rgb(0, 209, 178)',
+                          backgroundColor: 'rgb(0, 209, 178)',
+                          data: [{% for year, count in fire_reports_data.items %} {{count}}, {% endfor %}]
+                      }]
+                  },
+
+                  // Configuration options go here
+                  options: defaultChartOptions
+              });
+            </script>
+            <p><a href="{% url 'export_fire_reports_specific' property.id %}"><span>Download all fire and EMS data for this address.</span></a></p>
+          </div>
+
+          <!-- EMS GRAPH -->
+          <div class="column chart is-half">
+            <h4>EMS Reports</h4>
+            <canvas id="ems_report_chart"></canvas>
+            <script type="text/javascript">
+
+              var ctx = document.getElementById('ems_report_chart').getContext('2d');
+              var chart = new Chart(ctx, {
+                  type: 'line',
+                  data: {
+                      labels: [ {{ ems_reports_data|join:" , "}} ],
+                      datasets: [{
+                          label: 'EMS Reports',
+                          borderColor: 'rgb(0, 209, 178)',
+                          backgroundColor: 'rgb(0, 209, 178)',
+                          data: [{% for year, count in ems_reports_data.items %} {{count}}, {% endfor %}]
+                      }]
+                  },
+
+                  // Configuration options go here
+                  options: defaultChartOptions
+              });
+            </script>
+          </div>
+
+
+        </div>
+
+
+
+      </div><!-- .column -->
+
+      <div class="column is-one-third content">
+
+            <div class="card has-margin-bottom">
+
+              <div class="card-content">
+                <h2 class="has-no-margin-bottom has-no-margin-top">
+                  {{ property.name|title }}
+                </h2>
+                <p>{{ property.address }}</p>
+
+                <hr />
+
+                {% if median_rent is not None %}
+                <div class="content">
+                    <h3 class="is-size-6 has-no-margin-top">Per-Bedroom Rent</h3>
+                    <canvas id="rent_comparison_chart"></canvas>
+                    <script type="text/javascript">
+
+                      var ctx = document.getElementById('rent_comparison_chart').getContext('2d');
+                      var chart = new Chart(ctx, {
+                          type: 'bar',
+                          data: {
+                              labels: [ '{{ property.name|title }}', 'Median Rent, San Marcos' ],
+                              datasets: [{
+                                  data: [ {{ property.current_2bdrm_rent }}, {{ median_rent }}],
+                                  borderColor: ['hsl(171, 100%, 41%)', 'hsl(0, 0%, 86%)'],
+                                  backgroundColor: ['hsl(171, 100%, 41%)', 'hsl(0, 0%, 86%)']
+                              }]
+                          },
+
+                          // Configuration options go here
+                          options: defaultChartOptions
+                      });
+                    </script>
+                    <p>Per-bedroom rent is calculated using the most recent available 2-bedroom rent data.</p>
+                </div>
+                <hr />
+                {% endif %}
+
+
+                <div class="content">
+                  <table class="table">
+                    <tr>
+                      <td>No. Units:</td>
+                      <td>{{ property.units | default_if_none:"unknown" }}</td>
+                    </tr>
+                    <tr>
+                      <td>Lease Type:</td>
+                      <td>
+                        {% if property.lease_type != "" %}
+                          {{ property.lease_type|title  }}
+                        {% else %}
+                          unknown
+                        {% endif %}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Section 8:</td>
+                      <td>{{ property.section_8 }}</td>
+                    </tr>
+                    <tr>
+                      <td>ACT Ally:</td>
+                      <td>{{ property.section_8 }}</td>
+                    </tr>
+                    <!--
+                    <tr>
+                      <td>Management Company:</td>
+                      <td>{% if property.current_management != "" %}
+                        {{ property.current_management|safe  }}
+                      {% else %}
+                        unknown
+                      {% endif %}</td>
+                    </tr>
+                    -->
+                    <tr>
+                      <td>Owner(s):</td>
+                      <td>{{ property.current_owners|safe }}</td>
+                    </tr>
+                  </table>
+                </div>
+
+
+                <hr />
+
+
+
+                <h3 class="is-size-6 has-no-margin-top">Property Value</h3>
+                <canvas id="year_value_chart"></canvas>
+                <script type="text/javascript">
+                  var ctx = document.getElementById('year_value_chart').getContext('2d');
+                  var chart = new Chart(ctx, {
+                      type: 'bar',
+                      data: {
+                          labels: [ {% for value in values.all %}
+                            '{{ value.year }}'{% if not forloop.last %},{%endif%}
+                          {% endfor %} ],
+                          datasets: [{
+                              data: [ {% for value in values.all %}{{ value.value }}{% if not forloop.last %},{%endif%}{% endfor %}],
+                              borderColor: 'hsl(171, 100%, 41%)',
+                              backgroundColor: 'hsl(171, 100%, 41%)'
+                          }]
+                      },
+
+                      // Configuration options go here
+                      options: {
+                        aspectRatio: 3,
+                        legend: {
+                          display: false
+                        },
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    suggestedMin: 0,
+                                }
+                            }]
+                        }
+                      }
+                  });
+                </script>
+
+
+              </div>
+            </div>
+
+
+
+
+      </div><!-- .column -->
+    </div><!-- .columns -->
+
+
+
+
+    <script>
+    var map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/mapbox/streets-v11',
+      center: [{{property.longitude}}, {{ property.latitude }}],
+      zoom: 14
+    });
+
+    var properties_geojson = {
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: {
+              lon: {{ property.longitude }},
+              lat: {{ property.latitude }}
+            }
+          },
+          popup: new mapboxgl.Popup({ offset: 25 }).setHTML('<strong>{{ property.name }}</strong><br />{{ property.address }}'),
+          properties: {
+            title: '{{ property.name }}',
+            description: '{{ property.address }}'
+          }
+        },
+      ]
+    };
+
+    // add markers to map
+    properties_geojson.features.forEach(function(marker) {
+
+      // create a HTML element for each feature
+      var el = document.createElement('div');
+      el.className = 'marker large has-background-primary';
+
+      // make a marker for each feature and add to the map
+      new mapboxgl.Marker(el)
+        .setLngLat(marker.geometry.coordinates)
+        .setPopup(marker.popup)
+        .addTo(map);
+    });
+
+    </script>
+
+
+
+
+
+
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block content %}
+
+
+  <table class="table properties">
+    <thead>
+      <tr>
+        <th data-sort="string">Name</th>
+        <th data-sort="string">Address</th>
+        <th data-sort="string">Lease Type</th>
+        <th data-sort="int">Units</th>
+        <th data-sort="int">2bdrm Rent</th>
+        <th data-sort="string">Owner</th>
+        <th data-sort="int">Propery Value</th>
+      </tr>
+    </thead>
+
+  {% for property in properties %}
+    <tr>
+      <td>
+        <a href="{% url 'property' property.id %}">{{ property.name|title }}</a>
+      </td>
+      <td>{{ property.simple_address }}</td>
+      <td class="{% if property.lease_type == '' %}unknown{% endif %}">
+        {% if property.lease_type != "" %}
+          {{ property.lease_type|title  }}
+        {% else %}
+          unknown
+        {% endif %}
+      </td>
+      <td class="{% if property.units is None %}unknown{% endif %}" data-sort-value="{% if property.units is None %}99999{%else%}{{property.units}}{% endif %}">
+        {{ property.units | default_if_none:"unknown" }}
+      </td>
+      <td class="{% if property.current_2bdrm_rent == 'unknown' %}unknown{% endif %}" data-sort-value="{% if property.current_2bdrm_rent == 'unknown' %}999999999999999{%else%}{{property.current_2bdrm_rent}}{% endif %}">
+        {% if property.current_2bdrm_rent != 'unknown' %}${% endif %}{{ property.current_2bdrm_rent }}
+      </td>
+      <td>{{ property.current_owners|safe }}</td>
+      <td class="{% if property.current_property_value == 'unknown' %}unknown{% endif %}" data-sort-value="{{property.current_property_value}}">
+        {% if property.current_property_value != 'unknown' %}${% endif %}{{ property.current_property_value|intcomma }}
+      </td>
+    </tr>
+  {% endfor %}
+
+  <tfoot>
+    <tr>
+      <th>Name</th>
+      <th>Address</th>
+      <th>Lease Type</th>
+      <th>Units</th>
+      <th>2bdrm Rent</th>
+      <th>Owner</th>
+      <th>Propery Value</th>
+    </tr>
+  </tfoot>
+  </table>
+
+
+{% endblock %}

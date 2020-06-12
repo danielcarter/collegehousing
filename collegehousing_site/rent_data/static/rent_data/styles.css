@@ -1,0 +1,141 @@
+
+
+/*** MENU ***/
+
+.top_menu {
+  padding: 2em 0 1em;
+}
+
+a.navbar-item:focus, a.navbar-item:focus-within, a.navbar-item:hover, a.navbar-item.is-active, .navbar-link:focus, .navbar-link:focus-within, .navbar-link:hover, .navbar-link.is-active {
+  background-color: transparent !important;
+  color: #000 !important;
+}
+
+.navbar .icon {
+  margin-right: .5rem !important;
+  margin-left: .25rem !important;
+}
+
+a.navbar-item, .navbar-link {
+  padding-right: 1rem;
+}
+
+.navbar-brand a.navbar-item {
+  padding-right: .75rem;
+}
+
+
+/*** UTILS ***/
+.has-margin-bottom {
+  margin-bottom: 2em;
+}
+
+.has-margin-top {
+  margin-top: 2em;
+}
+
+.has-no-margin-top {
+  margin-top: 0 !important;
+}
+
+.has-no-margin-bottom {
+  margin-bottom: 0 !important;
+}
+
+a, .breadcrumb a {
+  color: hsl(171, 100%, 41%);
+}
+
+.unknown {
+  color: #dbdbdb;
+}
+
+th.sorted.ascending:after {
+	content: "  \2191";
+}
+
+th.sorted.descending:after {
+	content: " \2193";
+}
+
+/*** LOGO ***/
+.logo {
+  padding: 2rem 1rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid hsl(171, 100%, 41%);
+  border-top: 1px solid hsl(171, 100%, 41%);
+}
+
+.logo .location {
+  font-size: .8em;
+}
+
+.logo a {
+  color: #b5b5b5;
+}
+
+/*** LAYOUT ***/
+
+
+/*** HOME ***/
+.intro_graf a {
+  text-decoration: none;
+  border-bottom: 3px solid;
+  color: hsl(171, 100%, 41%);
+}
+
+/*** MAPS ****/
+#map {
+  width: 100%;
+  height: 40vh;
+  background-color: #ccc;
+}
+
+.mapboxgl-marker {
+  height: 10px;
+  width: 10px;
+  border-radius: 50%;
+  border: 1px solid #fff;
+  cursor: pointer;
+}
+
+.mapboxgl-marker.large {
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+}
+
+.mapboxgl-popup {
+  max-width: 200px;
+}
+
+
+
+/*** CHARTS ***/
+.chart {
+  margin: 0 0 4em 0;
+}
+.chart h3 {
+  font-weight: bold;
+  margin: 0 0 .5em 0;
+}
+
+
+
+
+/*** TOOLTIPS ***/
+.tooltip:focus::before, .tooltip:hover::before, .tooltip.is-tooltip-active::before {
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+
+
+/*** RESPONSIVE ***/
+@media(max-width: 767px) { /* <== You can change this break point as per your  needs */
+  .columns-secondary {
+    flex-direction: column-reverse;
+    display: flex;
+  }
+}

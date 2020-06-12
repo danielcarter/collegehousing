@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block content %}
+
+
+  <div class="columns columns-secondary">
+
+    <div class="column is-two-thirds content">
+
+
+      <h3 class="has-no-margin-top">Total Property Value</h3>
+      <canvas id="year_value_chart"></canvas>
+      <script type="text/javascript">
+        var ctx = document.getElementById('year_value_chart').getContext('2d');
+        var chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [ {% for observation in year_value_data %}'{{ observation.year }}'{% if not forloop.last %},{%endif%}{% endfor %} ],
+                datasets: [{
+                    data: [ {% for observation in year_value_data %}{{ observation.total_value }}{% if not forloop.last %},{%endif%}{% endfor %}],
+                    borderColor: 'hsl(171, 100%, 41%)',
+                    backgroundColor: 'hsl(171, 100%, 41%)'
+                }]
+            },
+
+            // Configuration options go here
+            options: {
+              aspectRatio: 3,
+              legend: {
+                display: false
+              },
+              scales: {
+                  yAxes: [{
+                      ticks: {
+                          suggestedMin: 0,
+                      }
+                  }]
+              }
+            }
+        });
+      </script>
+
+    </div>
+
+    <div class="column is-one-third content">
+
+      <div class="card has-margin-bottom">
+
+        <div class="card-content">
+          <h2 class="has-no-margin-bottom">
+            {{ owner.name }}
+          </h2>
+          <p>{%if owner.address1 is not None %}{{ owner.address1 }} <br />{% endif %}
+            {%if owner.address2 != "NA" %}{{ owner.address2 }} <br />{% endif %}
+            {%if owner.address3 != "NA" %}{{ owner.address3 }} <br />{% endif %}
+            {%if owner.city != "NA" %}
+              {{ owner.city }}
+              {% if owner.state != "NA" %}
+              , {{ owner.state }}
+              {%endif%}
+              {% if owner.zip != "NA" %}
+               {{ owner.zip }}
+              {%endif%}
+            {% endif %}
+
+
+
+        </div>
+      </div><!-- .card -->
+    </div><!-- .column -->
+
+  </div><!-- .columns -->
+
+  <div class="columns columns-secondary">
+    <div class="column is-full content">
+
+        {% for property in properties %}
+
+        <h3><a href="{% url 'property' property.id %}" title="Information about {{property.name}}">{{ property.name }}</a></h3>
+
+        <table class="table">
+
+          <thead>
+            <tr>
+              <th>Year</th>
+              <th>Property Value</th>
+              <th>Ownership Percent</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            {% for ownership in ownership_observations reversed %}
+
+              {% if ownership.property.name == property.name %}
+
+
+              <tr>
+                <td>{{ ownership.year }}</td>
+                <td>${{ ownership.value|intcomma }}</td>
+                <td>{{ ownership.ownership_percent }}%</td>
+              </tr>
+
+              {% endif %}
+
+            {% endfor %}
+          </tbody>
+        </table>
+
+        {% endfor %}
+
+      </div><!-- .column -->
+
+    </div><!-- .columns -->
+
+
+
+
+{% endblock %}

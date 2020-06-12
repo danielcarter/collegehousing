@@ -1,0 +1,9 @@
+# Text backup files
+*.bak
+
+# Database
+*.sqlite3
+
+# Settings
+collegehousing_site/rent_project/settings.py
+collegehousing_site/rent_project/rent_data/static/tokens.js

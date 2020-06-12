@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <div class="content is-large">
+      <p class="intro_graf">
+      The College Housing Project collects public data on the rental market in San Marcos, TX. <a href="{% url 'properties' %}">Browse</a> properties or access the <a href="{% url 'process' %}">data</a>.
+      </p>
+    </div>
+
+    <div id='map'></div>
+    <script>
+
+    var map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/mapbox/light-v10',
+      center: [-97.9414, 29.8833],
+      zoom: 11
+    });
+
+    var properties_geojson = {
+      type: 'FeatureCollection',
+      features: [
+        {% for property in properties %}
+        {
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: {
+              lon: {{ property.longitude }},
+              lat: {{ property.latitude }}
+            }
+          },
+          popup: new mapboxgl.Popup({ offset: 25 }).setHTML('<strong><a href="{%url "property" property.id %}">{{ property.name }}</a></strong><br />{{ property.address }}'),
+          properties: {
+            title: '{{ property.name }}',
+            description: '{{ property.address }}'
+          }
+        },
+        {% endfor %}
+      ]
+    };
+
+    // add markers to map
+    properties_geojson.features.forEach(function(marker) {
+
+      // create a HTML element for each feature
+      var el = document.createElement('div');
+      el.className = 'marker has-background-primary';
+
+      // make a marker for each feature and add to the map
+      new mapboxgl.Marker(el)
+        .setLngLat(marker.geometry.coordinates)
+        .setPopup(marker.popup)
+        .addTo(map);
+    });
+
+
+
+
+
+    </script>
+
+
+{% endblock %}

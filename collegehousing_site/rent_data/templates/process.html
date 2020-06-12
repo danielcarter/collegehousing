@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+{% block content %}
+
+
+
+    <div class="columns">
+
+      <div class="column is-two-thirds content">
+
+        <div class="content is-large">
+          <p class="intro_graf">
+          The College Housing Project collects public data from the Hays County Appraisal District, the San Marcos Police Department, and other sources. This page provides links to the original data files used in the project, as well as an explanation of the processing involved.
+          </p>
+        </div>
+
+        <h2 id="process-aggregate-data-files">Aggregate Data Files</h2>
+
+        <p>The links below make available the project's aggregate data for additional analysis. The data mirrors content available on this site and reflects decisions made during our data processing, as described below.</p>
+        <p>All data are made available under an <a href="https://opendatacommons.org/licenses/by/">Open Data Commons Attribution License</a>.</p>
+
+        <ul>
+          <li><a href="{% url 'export_properties' %}">Property Data</a></li>
+          <li><a href="{% url 'export_police_reports' %}">Police Data</a></li>
+          <li><a href="{% url 'export_fire_reports' %}">Fire and EMS Data</a></li>
+        </ul>
+
+
+        <hr />
+
+
+
+        <h2 id="process-original-data-files">Original Data Files</h2>
+
+        <p>Included below are original data files obtained from public agencies and processed for this project.</p>
+
+        <h3 id="process-property-records">Property Records</h3>
+        <p><strong>2019</strong></p>
+        <ul>
+          <li><a href="{% static "rent_data/data/2019/2019_PropertyDataExport735288.txt" %}">Land Data</a></li>
+          <li><a href="{% static "rent_data/data/2019/2019_PropertyDataExport735286.txt" %}">Property Data</a></li>
+          <li><a href="{% static "rent_data/data/2019/2019_PropertyDataExport735287.txt" %}">Ownership Data</a></li>
+        </ul>
+        <p><strong>2018</strong></p>
+        <ul>
+          <li><a href="{% static "rent_data/data/2018/2018_PropertyDataExport664642.txt" %}">Land Data</a></li>
+          <li><a href="{% static "rent_data/data/2018/2018_PropertyDataExport664640.txt" %}">Property Data</a></li>
+          <li><a href="{% static "rent_data/data/2018/2018_PropertyDataExport664641.txt" %}">Ownership Data</a></li>
+        </ul>
+
+        <h3 id="process-police-records">Police, Fire and EMS Records</h3>
+        <p><strong>2019</strong></p>
+        <ul>
+          <li><a href="{% static "rent_data/data/2019/2018_SMPD_Incident_Blotter.xls" %}">Police Incident Blotter</a></li>
+          <li><a href="{% static "rent_data/data/2018/2019_SM_Fire_EMS_Blotter.xlsx" %}">Fire and EMS Blotter</a></li>
+        </ul>
+
+        <p><strong>2018</strong></p>
+        <ul>
+          <li><a href="{% static "rent_data/data/2018/2018_SMPD_Incident_Blotter.xlsx" %}">Police Incident Blotter</a></li>
+          <li><a href="{% static "rent_data/data/2018/2018_SM_Fire_EMS_Blotter.csv" %}">Fire and EMS Blotter</a></li>
+        </ul>
+
+        <p><strong>2017</strong></p>
+        <ul>
+          <li><a href="{% static "rent_data/data/2017/2017_SMPD_Incident_Blotter.xls" %}">Police Incident Blotter</a></li>
+          <!--<li><a href="{% static "rent_data/data/2018/2018_SM_Fire_EMS_Blotter.csv" %}">Fire and EMS Blotter</a></li>-->
+        </ul>
+
+        <p><strong>2016</strong></p>
+        <ul>
+          <li><a href="{% static "rent_data/data/2016/2016_SMPD_Incident_Blotter.xlsx" %}">Police Incident Blotter</a></li>
+          <!--<li><a href="{% static "rent_data/data/2018/2018_SM_Fire_EMS_Blotter.csv" %}">Fire and EMS Blotter</a></li>-->
+        </ul>
+
+
+
+        <hr />
+
+
+        <h2 id="process-data-processing">Data Processing</h2>
+          <p><strong>Inclusion of Properties</strong></p>
+          <p>Properties are included in the database based on records from the Hays County Appraisal District. Only properties in the 78666 area code and designated using the B1 land type code (residential: multi-family) are included. Additionally, properties such as sorority houses and ___ are not included in the database.</p>
+
+          <p><strong>Sampling</strong></p>
+          <p>In order to track rent and other apartment features that must be collected manually, we use a random sample of 48 complexes.</p>
+
+          <p><strong>Police Report Dispositions</strong></p>
+          <p>Police report data is filtered to remove the following dispositions:</p>
+          <ul>
+            <li>Cancelled</li>
+            <li>False Alarm</li>
+            <li>False Alm Wthr</li>
+            <li>Ignore</li>
+            <li>No Contact</li>
+            <li>No Report</li>
+            <li>Not Verified</li>
+            <li>Unfounded</li>
+            <li>TDDChallenged</li>
+          </ul>
+
+          <p><strong>Fire and EMS Records</strong></p>
+          <p>Fire and EMS records are collected together from the San Marcos Fire Department. We consider a record to be an EMS call if the description begins with "EMS."</p>
+
+
+
+      </div><!-- .column -->
+
+      <div class="column is-one-third">
+
+        <div class="box">
+        <aside class="menu">
+          <p class="menu-label">
+            Contents
+          </p>
+          <ul class="menu-list">
+            <li><a href="#process-aggregate-data-processing">Aggregate Data Files</a></li>
+            <li><a href="#process-original-data-files">Original Data Files</a></li>
+            <li><a href="#process-data-processing">Data Processing</a></li>
+          </ul>
+        </aside>
+        </div>
+
+      </div><!-- .column -->
+
+    </div><!-- .columns -->
+
+
+
+
+{% endblock %}
