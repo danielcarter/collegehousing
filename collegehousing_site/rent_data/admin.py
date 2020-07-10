@@ -17,7 +17,7 @@ import chardet
 from decimal import Decimal
 
 # Register models.
-from rent_data.models import Property, PoliceReport, Owner, PropertyOwner, FireReport, Stat, RentObservation, Value, ManagementObservation
+from rent_data.models import Property, PoliceReport, Owner, PropertyOwner, FireReport, Stat, RentObservation, Value, ManagementObservation, Eviction, EvictionDisposition
 
 
 # Overwrite admin site so it can be extended.
@@ -800,7 +800,7 @@ admin_site = MyAdminSite()
 
 @admin.register(Property, site=admin_site)
 class PropertyAdmin(admin.ModelAdmin):
-    fields = ('address','name', 'year_built', 'section_8', 'management_companies', 'notes','rents')
+    fields = ('address','name', 'year_built', 'section_8', 'notes')
     search_fields = ['address','name']
     pass
 
@@ -823,8 +823,17 @@ class OwnerAdmin(admin.ModelAdmin):
 @admin.register(PropertyOwner, site=admin_site)
 class PropertyOwnerAdmin(admin.ModelAdmin):
     list_filter = ('year','owner')
+    search_fields = ['name']
     pass
 
 @admin.register(Stat, site=admin_site)
 class StatAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(Eviction, site=admin_site)
+class EvictionAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(EvictionDisposition, site=admin_site)
+class EvictionDispositionAdmin(admin.ModelAdmin):
     pass

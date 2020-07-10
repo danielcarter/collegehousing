@@ -71,6 +71,23 @@ class Value(models.Model):
     def __str__(self):
         return str(self.value) + " // " + str(self.year)
 
+class Eviction(models.Model):
+
+    property = models.ForeignKey('Property', default="", on_delete=models.CASCADE)
+    case_number = models.CharField(max_length=255, default="", primary_key=True)
+    date = models.DateField(null=True)
+    disposition = models.ForeignKey('EvictionDisposition', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.case_number + " // " + str(self.date) + " // " + self.property.name
+
+class EvictionDisposition(models.Model):
+
+    disposition = models.CharField(max_length=255, default="")
+
+    def __str__(self):
+        return self.disposition
+
 class Property(models.Model):
 
     address = models.CharField(max_length=255, default="")
